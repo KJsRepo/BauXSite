@@ -425,8 +425,18 @@ app.use((req, res, next) => {
               req.session.save((err) => { if (err) { controller.logEntry("ERR: " + err) } else { return res.redirect('/') }})
 
             } else {
-              app.set('controller', controller)
-              next()
+              req.session.alert = 'Please click the link in your email to verify your address'
+              req.session.alertType = 'error'
+
+              req.session.save((err) => {
+                if (err) {
+                  controller.logEntry("ERR: " + err)
+                } else {
+                  app.set('controller', controller)
+                  next()
+                }
+              })
+
             }
 
           } else {
