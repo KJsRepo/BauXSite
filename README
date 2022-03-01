@@ -1,0 +1,9 @@
+Installation:
+
+Set the following environment variables:
+
+SENDGRID_API_KEY="SG.xxxxxxxxxxxxx"
+SENDGRID_FROM_ADDRESS="email@example.com"
+
+MONGODB_URI="mongodb+srv://[user]:[password]@[cluster].4kmmu.mongodb.net/[database]?retryWrites=true&w=majority"
+CRYPTSECRET="[encryptionkey]"

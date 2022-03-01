@@ -1,0 +1,11 @@
+<p id="errorp">&nbsp;
+  <% if (data.error) { %>
+  <font color="red"><%= data.error %></font>
+  <% } %>
+</p>
+<form action="/bxs/changepass" method="post" onSubmit="return checkPassword(this);">
+Current Password: <input type="password" name="oldpassword" value=""> <br />
+New Password: <input type="password" name="password" value=""> <br />
+Repeat New Password: <input type="password" name="confirmpassword" value=""><br />
+<input type="submit" name="submit" value="Change Password">
+</form>

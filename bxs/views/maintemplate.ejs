@@ -1,0 +1,29 @@
+<html>
+
+<head>
+  <%- include('./partials/headers.ejs') %>
+</head>
+
+<body>
+  <% if (data.alert) { %>
+    <div class="alert alert<%= data.alertType %>">
+      <span class="alertclosebutton" onclick="this.parentElement.style.display='none';">&times;</span>
+      <%= data.alert %>
+    </div>
+  <% } %>
+  <div id="container">
+    <div id="headercontainer">
+      <h2 id="headertitle">site.name</h2>
+      <%- include('./partials/nav.ejs') %>
+    </div>
+
+    <div id="pagetitle"><%= data.title %></div>
+
+    <div id="maincontent">
+    <% if (contentpartial) { %><%- include('./partials/' + contentpartial) %> <% } %>
+    </div>
+
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,112 @@
+
+html {
+  font-family: 'Exo', sans-serif;
+  background-color: #edfbff;
+}
+
+#container {
+  border: 1px solid #78a;
+  border-radius: 10px;
+  padding: 5px;
+  background-color: #fff;
+  height: 500px;
+  width: 90%;
+  position: absolute;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  box-shadow: 6px 6px 10px #0003;
+}
+
+#headertitle {
+  padding: 0px;
+  margin: 2px 0px 0px 5px;
+  font-size: 2em
+}
+
+#headercontainer {
+  border: 0px;
+  padding: 0px;
+  margin: 0px;
+}
+
+
+nav {
+  border: 0px;
+  border-bottom: 1px solid #666;
+  padding: 0px;
+  margin: 0px;
+  font-size: 0.9em;
+}
+
+nav a {
+  text-decoration: none;
+  color: #667;
+}
+
+nav ul {
+  border: 0px;
+  padding: 0px;
+  margin: 0px;
+  text-align: right;
+}
+
+nav ul li {
+  border: 0px;
+  padding: 0px;
+  margin: 0px 30px 0px 0px;
+  list-style-type:none;
+  display: inline-block;
+}
+
+#pagetitle {
+  color: #999;
+  font-size: 1.8em;
+  border: 0px;
+  padding: 0px;
+  margin: 3px 5px 0px 0px;
+  float: right;
+}
+
+
+#maincontent {
+  border: 0px;
+  padding: 0px;
+  margin: 10px 10px 10px 20px;
+}
+
+
+.alert {
+  padding: 20px;
+  border: 1px solid #999;
+  border-radius: 5px;
+  background-color: #fdd;
+  color: black
+  margin-bottom: 15px;
+  width: 50%;
+  position: absolute;
+}
+
+.alerterror {
+  background-color: #fee;
+}
+
+.alertnotify {
+  background-color: #efe;
+}
+
+.alertclosebutton {
+  margin-left: 15px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  color: #000;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}

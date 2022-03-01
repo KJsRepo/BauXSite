@@ -1,0 +1,11 @@
+<nav>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <% if (user.isLoggedIn) { %>
+      <li><a href="/bxs/preferences">Preferences</a></li>
+    <% } else { %>
+      <li><a href="/bxs/login">Log In</a></li>
+      <li><a href="/bxs/signup">Sign Up</a></li>
+    <% } %>
+  </ul>
+</nav>
