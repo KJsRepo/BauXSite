@@ -10,7 +10,7 @@ const User = require('./models/user.js')
 const app = express()
 
 const dburi = process.env.MONGODB_URI
-const rootDir = '/home/keith/bxs/bxs'
+const rootDir = '/home/keith/huddle.place'
 
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY)
 const mailFrom = process.env.SENDGRID_FROM_ADDRESS
@@ -362,7 +362,7 @@ class MailController {
 
 }
 
-var mailController = new MailController
+var mailer = new MailController
 
 
 
@@ -437,6 +437,7 @@ app.use((req, res, next) => {
                 }
               })
 
+
             }
 
           } else {
@@ -473,5 +474,5 @@ app.use(express.static(staticDir))
 
 module.exports.app = app
 module.exports.express = express
-module.exports.mailController = mailController
-module.exports.User = User
+module.exports.mailer = mailer
+module.exports.mongoose = mongoose

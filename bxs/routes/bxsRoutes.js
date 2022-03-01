@@ -1,6 +1,6 @@
 const server = require('../controller.js')
 
-let {app, express, mailController, User} = server
+let {app, express, mailer, User} = server
 
 const router = express.Router()
 
@@ -20,7 +20,7 @@ router.post('/forgotpass', (req, res) => {
         let newpass = (Math.random() + 1).toString(36).substring(2)
         app.get('controller').updatePasswordByUsername(foundUser.username, newpass)
           .then ((result) => {
-              mailController.sendEmail(foundUser.email, 'So You Forgot Your Password', `Hi, ${foundUser.username}, I understand you've forgotten your password.  No worries, happens to the best of us.  Here's your new password: ${newpass}.  You'll be prompted to change it upon logging in.`)
+              mailer.sendEmail(foundUser.email, 'So You Forgot Your Password', `Hi, ${foundUser.username}, I understand you've forgotten your password.  No worries, happens to the best of us.  Here's your new password: ${newpass}.  You'll be prompted to change it upon logging in.`)
           })
           .catch((err) => {
             app.get('controller').logEntry(err);
@@ -89,7 +89,7 @@ router.post('/signup', (req, res) => {
 
   app.get('controller').createNewUser(req.body)
     .then((token) => {
-      mailController.sendEmail(req.body.email, 'Email Verification', `Hi ${req.body.username}, please go to this URL to verify your email address: http://localhost:8080/bxs/confirmemail/?tkn=${token}`)
+      mailer.sendEmail(req.body.email, 'Email Verification', `Hi ${req.body.username}, please go to this URL to verify your email address: http://localhost:8080/bxs/confirmemail/?tkn=${token}`)
       req.session.alert = 'You have been sent an email, please click the link in the email to verify your account'
       req.session.alertType = 'notify'
       req.session.submittedInputs = req.body
