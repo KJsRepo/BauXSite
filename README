@@ -7,3 +7,5 @@ SENDGRID_FROM_ADDRESS="email@example.com"
 
 MONGODB_URI="mongodb+srv://[user]:[password]@[cluster].4kmmu.mongodb.net/[database]?retryWrites=true&w=majority"
 CRYPTSECRET="[encryptionkey]"
+
+Set the home directory in bxs/controller.js
