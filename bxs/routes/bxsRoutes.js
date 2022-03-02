@@ -1,6 +1,6 @@
 const server = require('../controller.js')
 
-let {app, express, mailer, User} = server
+let {app, express, mailer} = server
 
 const router = express.Router()
 
