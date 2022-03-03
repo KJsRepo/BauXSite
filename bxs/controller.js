@@ -461,16 +461,8 @@ app.use((req, res, next) => {
 
 })
 
-app.set('view engine', 'ejs')
-app.set('views', './bxs/views')
-app.listen(8080)
-  .on('error', (err) => {
-    console.log(`Caught an error:${err}`)
-  })
-
 let staticDir = rootDir + '/bxs/pub'
 app.use(express.static(staticDir))
-
 
 module.exports.app = app
 module.exports.express = express
