@@ -56,8 +56,15 @@ class SiteController {
               this.userdata['isLoggedIn'] = true
               resolve(true)
             } else {
-              reject('User ID not valid: ' + userid)
+              let logStr = 'User ID not valid: ' + userid
+              this.logWarning(logStr)
+              reject(logStr)
             }
+          })
+          .catch((err) => {
+            let logStr = `getUserById failed with userid = ${userid}`
+            this.logError(logStr)
+            reject(logStr)
           })
 
 
@@ -79,13 +86,20 @@ class SiteController {
               .then((foundUser) => {
                 resolve(foundUser)
               })
+              .catch((err) => {
+                let logStr = `getUserById failed with userid = ${userid}`
+                this.logError(logStr)
+                reject(logStr)
+              })
 
           } else {
             resolve(false)
           }
         })
         .catch((err) => {
-          reject('Error on finding user')
+          let logStr = `Couldn't find username ${username}`
+          this.logWarning(logStr)
+          reject(logStr)
         })
     })
   }
@@ -100,12 +114,19 @@ class SiteController {
               .then((foundUser) => {
                 resolve(foundUser)
               })
+              .catch((err) => {
+                let logStr = `getUserById failed with id = ${foundUser._id}`
+                this.logError(logStr)
+                reject(logStr)
+              })
           } else {
             resolve(false)
           }
         })
         .catch((err) => {
-          reject('Error on finding user')
+          let logStr = `User.findOne failed with email = ${userid}`
+          this.logWarning(logStr)
+          reject(logStr)
         })
     })
   }
@@ -118,11 +139,18 @@ class SiteController {
 
       User.findById(id)
         .then ((foundUser) => {
-          resolve(foundUser)
+          if(foundUser) {
+            resolve(foundUser)
+          } else {
+            let logStr = `User.findById failed with id = ${id}`
+            this.logWarning(logStr)
+            resolve(false)
+          }
         })
-        .catch ((err) => {
-          this.logEntry('Could not find user by ID: ' + err)
-          reject('Could not find user by ID: ' + err)
+        .catch((err) => {
+          let logStr = `User.findById failed with id = ${id}`
+          this.logError(logStr)
+          reject(logStr)
         })
       })
   }
@@ -145,7 +173,9 @@ class SiteController {
           }
         })
         .catch((err) => {
-          reject(err)
+          let logStr = `findUserByUsernameOrEmail failed with identifier = ${identifier}`
+          this.logError(logStr)
+          reject(logStr)
         })
     })
   }
@@ -170,7 +200,9 @@ class SiteController {
 
         })
         .catch((err) => {
-          this.logEntry(err);
+          let logStr = `User.findOne failed with username = ${username}`
+          this.logError(logStr)
+          reject(logStr)
           })
 
       })
@@ -196,9 +228,16 @@ class SiteController {
                 user.save()
                 resolve(true)
               } else {
-                reject('Could not find user')
+                let logStr = `Tried to update password with bad username = ${username}`
+                this.logWarning(logStr)
+                reject(logStr)
               }
             })
+            .catch((err) => {
+              let logStr = `User.findOne failed with username = ${username}`
+              this.logError(logStr)
+              reject(logStr)
+              })
 
         })
       }
@@ -217,7 +256,9 @@ class SiteController {
             foundUser.save()
             return foundUser
           } else {
-            reject('Could not find user')
+            let logStr = `Tried to verify with bad token = ${token}`
+            this.logError(logStr)
+            reject(logStr)
           }
 
         })
@@ -228,7 +269,9 @@ class SiteController {
                 resolve()
               })
               .catch(() => {
-                reject(`Could not update user's password`)
+                let logStr = `Failed to update password with bad username = ${foundUser.username}`
+                this.logError(logStr)
+                reject(logStr)
               })
           } else {
             reject(`Could not find user`)
@@ -288,7 +331,9 @@ class SiteController {
                             resolve(token)
                           })
                           .catch ((err) => {
-                            reject(err)
+                            let logStr = `Could not save user = ${newUser.username}`
+                            this.logError(logStr)
+                            reject(logStr)
                           })
                       }))
 
@@ -310,11 +355,37 @@ class SiteController {
     }
 
 
-    logEntry(description) {
+    logPageLoad(description) {
 
       let fs = require('fs')
 
-      let entryStr = `${new Date().toTimeString()} | ${this.requestPath} | ${Object.entries(this.requestInputs).map(x=>x.join(":"))} | ${description}\n`
+      let entryStr = `PAGE: ${new Date().toTimeString()} | ${this.requestPath} | ${Object.entries(this.requestInputs).map(x=>x.join(":"))} | ${description}\n`
+      fs.appendFile('./dev.log', entryStr, (err) => {
+        if (err) {
+          console.log(`Could not write log file! ${err}`);
+        }
+      })
+
+    }
+
+    logWarning(description) {
+
+      let fs = require('fs')
+
+      let entryStr = `WARN: ${new Date().toTimeString()} | ${description}\n`
+      fs.appendFile('./dev.log', entryStr, (err) => {
+        if (err) {
+          console.log(`Could not write log file! ${err}`);
+        }
+      })
+
+    }
+
+    logError(description) {
+
+      let fs = require('fs')
+
+      let entryStr = `ERR: ${new Date().toTimeString()} | ${description}\n`
       fs.appendFile('./dev.log', entryStr, (err) => {
         if (err) {
           console.log(`Could not write log file! ${err}`);
@@ -371,6 +442,7 @@ var mailer = new MailController
 
 
 
+var controller = new SiteController()
 
 // Get user session for all requests
 app.use((req, res, next) => {
@@ -392,17 +464,12 @@ app.use((req, res, next) => {
     delete req.session.alertType
     delete req.session.submittedInputs
 
-    let controller = new SiteController()
     controller.loadUserFromSession(req.session.userid)
       .then ((loadUserSuccess) => {
 
-        //  If user can't be loaded, continue without user validation and password checks
-        if(!loadUserSuccess) {
+        if(loadUserSuccess) {
 
-          app.set('controller', controller)
-          next()
-
-        } else {
+          controller.userdata.isLoggedIn = true
 
           //  If the user's forcePasswordReset flag is set, redirect them to password change
           if(controller.userdata.forcePasswordReset) {
@@ -432,7 +499,6 @@ app.use((req, res, next) => {
                 if (err) {
                   controller.logEntry("ERR: " + err)
                 } else {
-                  app.set('controller', controller)
                   next()
                 }
               })
@@ -441,7 +507,6 @@ app.use((req, res, next) => {
             }
 
           } else {
-            app.set('controller', controller)
             next()
           }
         }
@@ -454,17 +519,21 @@ app.use((req, res, next) => {
     controller.requestPath = req.path
     controller.requestInputs = req.body
 
-    controller.logEntry('page load')
+    controller.logPageLoad()
   } else {
     next()
   }
 
 })
 
+
+
 let staticDir = rootDir + '/bxs/pub'
 app.use(express.static(staticDir))
+
 
 module.exports.app = app
 module.exports.express = express
 module.exports.mailer = mailer
 module.exports.mongoose = mongoose
+module.exports.controller = controller
