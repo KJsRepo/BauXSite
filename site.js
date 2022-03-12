@@ -1,15 +1,16 @@
-const controller = require('./bxs/controller.js')
-let {app, express, mailController, User} = controller
+const server = require('./bxs/controller.js')
+let {app, express, mailer, controller} = server
 
 const bxsRoutes = require('./bxs/routes/bxsRoutes')
 app.use('/bxs', bxsRoutes)
 
-
+const huddleRoutes = require('./bxs/routes/lnRoutes')
+app.use('/ln', huddleRoutes)
 
 app.get('/', (req, res, next) => {
   let contentpartial = ''
   let data = {'title': 'Home'}
-  res.render('maintemplate', {contentpartial: '', data: app.data, user: app.get('controller').userdata})
+  res.render('maintemplate', {contentpartial: '', data: app.data, user: controller.userdata})
 })
 
 
