@@ -17,7 +17,7 @@ const mailFrom = process.env.SENDGRID_FROM_ADDRESS
 
 mongoose.connect(dburi, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((response) => { })
-  .catch((err) => { this.logEntry(err);})
+  .catch((err) => { this.logError(err);})
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
@@ -63,7 +63,7 @@ class SiteController {
           })
           .catch((err) => {
             let logStr = `getUserById failed with userid = ${userid}`
-            this.logError(logStr)
+            this.logError(logStr + `| ${err}`)
             reject(logStr)
           })
 
@@ -88,7 +88,7 @@ class SiteController {
               })
               .catch((err) => {
                 let logStr = `getUserById failed with userid = ${userid}`
-                this.logError(logStr)
+                this.logError(logStr + `| ${err}`)
                 reject(logStr)
               })
 
@@ -98,7 +98,7 @@ class SiteController {
         })
         .catch((err) => {
           let logStr = `Couldn't find username ${username}`
-          this.logWarning(logStr)
+          this.logWarning(logStr + `| ${err}`)
           reject(logStr)
         })
     })
@@ -116,7 +116,7 @@ class SiteController {
               })
               .catch((err) => {
                 let logStr = `getUserById failed with id = ${foundUser._id}`
-                this.logError(logStr)
+                this.logError(logStr + `| ${err}`)
                 reject(logStr)
               })
           } else {
@@ -125,7 +125,7 @@ class SiteController {
         })
         .catch((err) => {
           let logStr = `User.findOne failed with email = ${userid}`
-          this.logWarning(logStr)
+          this.logWarning(logStr + `| ${err}`)
           reject(logStr)
         })
     })
@@ -149,7 +149,7 @@ class SiteController {
         })
         .catch((err) => {
           let logStr = `User.findById failed with id = ${id}`
-          this.logError(logStr)
+          this.logError(logStr + `| ${err}`)
           reject(logStr)
         })
       })
@@ -174,10 +174,34 @@ class SiteController {
         })
         .catch((err) => {
           let logStr = `findUserByUsernameOrEmail failed with identifier = ${identifier}`
-          this.logError(logStr)
+          this.logError(logStr + `| ${err}`)
           reject(logStr)
         })
     })
+  }
+
+  getUsernameById(id = 0) {
+
+    return new Promise((resolve, reject) => {
+
+      if (id == 0 || id == '') { resolve(false) }
+
+      User.findById(id)
+        .then ((foundUser) => {
+          if(foundUser) {
+            resolve(foundUser.username)
+          } else {
+            let logStr = `User.findById failed with id = ${id}`
+            this.logWarning(logStr)
+            resolve(false)
+          }
+        })
+        .catch((err) => {
+          let logStr = `User.findById failed with id = ${id}`
+          this.logError(logStr + `| ${err}`)
+          reject(logStr)
+        })
+      })
   }
 
   checkLogin(username, password) {
@@ -201,7 +225,7 @@ class SiteController {
         })
         .catch((err) => {
           let logStr = `User.findOne failed with username = ${username}`
-          this.logError(logStr)
+          this.logError(logStr + `| ${err}`)
           reject(logStr)
           })
 
@@ -235,7 +259,7 @@ class SiteController {
             })
             .catch((err) => {
               let logStr = `User.findOne failed with username = ${username}`
-              this.logError(logStr)
+              this.logError(logStr + `| ${err}`)
               reject(logStr)
               })
 
@@ -270,7 +294,7 @@ class SiteController {
               })
               .catch(() => {
                 let logStr = `Failed to update password with bad username = ${foundUser.username}`
-                this.logError(logStr)
+                this.logError(logStr + `| ${err}`)
                 reject(logStr)
               })
           } else {
@@ -331,8 +355,8 @@ class SiteController {
                             resolve(token)
                           })
                           .catch ((err) => {
-                            let logStr = `Could not save user = ${newUser.username}`
-                            this.logError(logStr)
+                            let logStr = `Could not save user = ${newUser.username} | ${err}`
+                            this.logError(logStr + `| ${err}`)
                             reject(logStr)
                           })
                       }))
@@ -355,11 +379,13 @@ class SiteController {
     }
 
 
-    logPageLoad(description) {
+    logPageLoad() {
+
+      if(this.requestPath == '/ln/checkInvoice/') return false;
 
       let fs = require('fs')
 
-      let entryStr = `PAGE: ${new Date().toTimeString()} | ${this.requestPath} | ${Object.entries(this.requestInputs).map(x=>x.join(":"))} | ${description}\n`
+      let entryStr = `PAGE: ${new Date().toTimeString()} | ${this.requestMethod} ${this.requestPath} | ${Object.entries(this.requestInputs).map(x=>x.join(":"))} \n`
       fs.appendFile('./dev.log', entryStr, (err) => {
         if (err) {
           console.log(`Could not write log file! ${err}`);
@@ -427,7 +453,7 @@ class MailController {
 
     this.mailer.send(email)
       .catch((err) => {
-        this.logEntry(err);
+        this.logError(err)
       })
   }
 
@@ -464,6 +490,11 @@ app.use((req, res, next) => {
     delete req.session.alertType
     delete req.session.submittedInputs
 
+    controller.requestPath = req.path
+    controller.requestInputs = req.body
+    controller.requestMethod = req.method
+    controller.logPageLoad()
+
     controller.loadUserFromSession(req.session.userid)
       .then ((loadUserSuccess) => {
 
@@ -477,7 +508,7 @@ app.use((req, res, next) => {
                 req.path != '/bxs/logout' ) {
               req.session.alert = 'Please change your password'
               req.session.alertType = 'notify'
-              req.session.save((err) => { if (err) { controller.logEntry("ERR: " + err) } else { return res.redirect('/bxs/changepass') }})
+              req.session.save((err) => { if (err) { controller.logError(err) } else { return res.redirect('/bxs/changepass') }})
             } else {
               app.set('controller', controller)
               next()
@@ -489,37 +520,29 @@ app.use((req, res, next) => {
             if(req.path != '/') {
               req.session.alert = 'Please click the link in your email to verify your address'
               req.session.alertType = 'error'
-              req.session.save((err) => { if (err) { controller.logEntry("ERR: " + err) } else { return res.redirect('/') }})
+              req.session.save((err) => { if (err) { controller.logError(err) } else { return res.redirect('/') }})
 
             } else {
               req.session.alert = 'Please click the link in your email to verify your address'
               req.session.alertType = 'error'
-
-              req.session.save((err) => {
-                if (err) {
-                  controller.logEntry("ERR: " + err)
-                } else {
-                  next()
-                }
-              })
-
+              req.session.save((err) => { if (err) { controller.logError(err) } else { next() }})
 
             }
 
           } else {
             next()
           }
+
+        } else {
+          next()
         }
 
       })
       .catch ((err) => {
-        req.session.save((saveerr) => { if (err) { controller.logEntry("ERR: " + err) } else { return res.redirect('/bxs/logout') }})
+        req.session.save((saveerr) => { if (err) { controller.logError(err) } else { return res.redirect('/bxs/logout') }})
       })
 
-    controller.requestPath = req.path
-    controller.requestInputs = req.body
 
-    controller.logPageLoad()
   } else {
     next()
   }
