@@ -1,0 +1,42 @@
+<script src="/src/qrcode.js"></script>
+
+<script>
+
+  function invoiceStatus() {
+
+    let request = new XMLHttpRequest()
+
+    let request_hash = '<%= data.invoice_hash %>';
+    let requestURI = `http://localhost:8080/ln/checkInvoice/?invoice_hash=` + encodeURIComponent(request_hash)
+
+    request.open('GET', requestURI, true)
+
+    request.onload = () => {
+      if(request.status == 200) {
+        if(request.response == 'true') {
+          window.location.replace("http://localhost:8080/ln/depositcomplete?a=<%= data.amount %>");
+        }
+      }
+    }
+
+    request.send()
+
+    setTimeout(invoiceStatus, 1000);
+  }
+
+
+
+
+invoiceStatus()
+
+</script>
+
+
+<canvas id="canvas"></canvas>
+
+<script>
+  QRCode.toCanvas(document.getElementById('canvas'), '<%= data.payment_request %>', function (error) {
+    if (error) console.error(error)
+  })
+</script>
+<div id="invoiceAmount"><%= data.amount %> <i class="fak fa-satoshisymbol-outline"></i></div>

@@ -8,11 +8,12 @@
   <% if (data.alert) { %>
     <div class="alert alert<%= data.alertType %>">
       <span class="alertclosebutton" onclick="this.parentElement.style.display='none';">&times;</span>
-      <%= data.alert %>
+      <%- data.alert %>
     </div>
   <% } %>
   <div id="container">
     <div id="headercontainer">
+      <% if (user.isLoggedIn) { %><div id="walletcontainer" ><%= user.balance %> <i class="fak fa-satoshisymbol-outline"></i></div><% } %>
       <h2 id="headertitle">site.name</h2>
       <%- include('./partials/nav.ejs') %>
     </div>

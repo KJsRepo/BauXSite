@@ -1,0 +1,9 @@
+<p id="errorp">&nbsp;
+  <% if (data.error) { %>
+  <font color="red"><%= data.error %></font>
+  <% } %>
+</p>
+<form action="/ln/deposit" method="post">
+Amount in Sats: <input type="text" name="amount" value=""> <br />
+<input type="submit" name="submit" value="Create Fund Invoice">
+</form>

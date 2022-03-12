@@ -32,6 +32,9 @@ html {
   margin: 0px;
 }
 
+#walletcontainer {
+  float: right;
+}
 
 nav {
   border: 0px;
@@ -85,8 +88,11 @@ nav ul li {
   background-color: #fdd;
   color: black
   margin-bottom: 15px;
+  margin-left: 25%;
+  margin-top: 150px
   width: 50%;
   position: absolute;
+  z-index: 100;
 }
 
 .alerterror {
