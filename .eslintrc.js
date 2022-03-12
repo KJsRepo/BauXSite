@@ -14,7 +14,8 @@ module.exports = {
         "ecmaVersion": 2018
     },
     "rules": {
-      "no-unused-vars": "off"
+      "no-unused-vars": "off",
+      "no-empty": "off"
     },
     "plugins": [
        "ejs"
