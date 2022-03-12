@@ -4,8 +4,8 @@ let {app, express, mailer, controller} = server
 const bxsRoutes = require('./bxs/routes/bxsRoutes')
 app.use('/bxs', bxsRoutes)
 
-const huddleRoutes = require('./bxs/routes/lnRoutes')
-app.use('/ln', huddleRoutes)
+const lnRoutes = require('./bxs/routes/lnRoutes')
+app.use('/ln', lnRoutes)
 
 app.get('/', (req, res, next) => {
   let contentpartial = ''
