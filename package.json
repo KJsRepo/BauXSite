@@ -21,7 +21,8 @@
     "nodemailer": "^6.7.2",
     "qrcode": "^1.5.0",
     "request": "^2.88.2",
-    "sendgrid-mail": "^0.0.3"
+    "sendgrid-mail": "^0.0.3",
+    "socket.io": "^4.4.1"
   },
   "devDependencies": {
     "eslint-plugin-ejs": "^0.0.2"

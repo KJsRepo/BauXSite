@@ -29,6 +29,9 @@ const userSchema = new mongoose.Schema({
   },
   forcePasswordReset: {
     type: Boolean
+  },
+  chatToken: {
+    type: String
   }
 
 }, {timestamps: true})

@@ -7,10 +7,14 @@ app.use('/bxs', bxsRoutes)
 const lnRoutes = require('./bxs/routes/lnRoutes')
 app.use('/ln', lnRoutes)
 
+const chatRoutes = require('./bxs/routes/chatRoutes')
+app.use('/c', chatRoutes)
+
 app.get('/', (req, res, next) => {
   let contentpartial = ''
   let data = {'title': 'Home'}
-  res.render('maintemplate', {contentpartial: '', data: app.data, user: controller.userdata})
+  res.render('maintemplate', {contentpartial: '', data: app.data, user: req.session.userdata})
+  console.log(req.session.userdata);
 })
 
 

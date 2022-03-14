@@ -13,7 +13,7 @@ const adminMacaroon = fs.readFileSync(`./admin.macaroon`).toString('hex')
 
 class LightningController {
 
-  createInvoice (amount, memo) {
+  createInvoice (username, amount, memo) {
 
     return new Promise((resolve, reject) => {
 
@@ -26,7 +26,7 @@ class LightningController {
       // First create an invoice in the database
       let invoiceData = {
         'creationDate': new Date(),
-        'username': controller.userdata.username,
+        'username': username,
         'amount': amount,
         'invoice_hash': null,
         paymentDate: null

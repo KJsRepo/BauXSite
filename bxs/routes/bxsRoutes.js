@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.get('/forgotpass', (req, res) => {
   app.data.title = 'Forgot Password'
-  res.render('maintemplate', {contentpartial: 'builtin/forgotpass', data: app.data, user: controller.userdata})
+  res.render('maintemplate', {contentpartial: 'builtin/forgotpass', data: app.data, user: req.session.userdata})
 
 })
 
@@ -34,7 +34,7 @@ router.post('/forgotpass', (req, res) => {
 
 router.get('/forgotconfirm', (req, res) => {
   app.data.title = 'Forgot Password'
-  res.render('maintemplate', {contentpartial: 'builtin/forgotconfirm', data: app.data, user: controller.userdata})
+  res.render('maintemplate', {contentpartial: 'builtin/forgotconfirm', data: app.data, user: req.session.userdata})
 })
 
 
@@ -43,13 +43,13 @@ router.get('/login', (req, res) => {
     res.redirect('/')
   } else {
     app.data.title = 'Login'
-    res.render('maintemplate', {contentpartial: 'builtin/login.ejs', data: app.data, user: controller.userdata})
+    res.render('maintemplate', {contentpartial: 'builtin/login.ejs', data: app.data, user: req.session.userdata})
   }
 })
 
 router.post('/login', (req, res) => {
 
-  if (controller.userdata.isLoggedIn) {
+  if (req.session.isLoggedIn) {
     res.redirect('/')
   } else {
 
@@ -61,7 +61,7 @@ router.post('/login', (req, res) => {
         } else {
           req.session.loginusername = req.body.username
           req.session.error = 'Username or password is incorrect'
-          req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/bxs/login') }})
+          req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/bxs/login') }})
         }
       })
 
@@ -70,8 +70,8 @@ router.post('/login', (req, res) => {
 })
 
 router.get('/logout', (req, res) => {
-  delete(req.session.userid)
-  req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/') }})
+  req.session.destroy()
+  return res.redirect('/')
 })
 
 
@@ -82,7 +82,7 @@ router.get('/logout', (req, res) => {
 
 router.get('/signup', (req, res) => {
   app.data.title = 'Signup'
-  res.render('maintemplate', {contentpartial: 'builtin/signup.ejs', data: app.data, user: controller.userdata})
+  res.render('maintemplate', {contentpartial: 'builtin/signup.ejs', data: app.data, user: req.session.userdata})
 })
 
 router.post('/signup', (req, res) => {
@@ -93,7 +93,7 @@ router.post('/signup', (req, res) => {
       req.session.alert = 'You have been sent an email, please click the link in the email to verify your account'
       req.session.alertType = 'notify'
       req.session.submittedInputs = req.body
-      req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/') }})
+      req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/') }})
     })
     .catch((err) => {
       if(err == 'duplicateEmail') {
@@ -109,7 +109,7 @@ router.post('/signup', (req, res) => {
       }
 
       req.session.submittedInputs = req.body
-      req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/bxs/signup') }})
+      req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/bxs/signup') }})
 
     })
 })
@@ -119,13 +119,13 @@ router.get('/confirmemail', (req, res) => {
     .then ((result) => {
       req.session.alert = 'You have been verified, please login'
       req.session.alertType = 'notify'
-      req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/bxs/login') }})
+      req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/bxs/login') }})
     })
     .catch((err) => {
       req.session.alert = 'Could not find that token'
       req.session.alertType = 'error'
-      controller.logEntry(err);
-      req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/') }})
+      controller.logError(err);
+      req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/') }})
     })
 
 
@@ -138,33 +138,33 @@ router.get('/confirmemail', (req, res) => {
 
 router.get('/preferences', (req, res) => {
   app.data.title = 'User Preferences'
-  res.render('maintemplate', {contentpartial: 'builtin/preferences.ejs', data: app.data, user: controller.userdata})
+  res.render('maintemplate', {contentpartial: 'builtin/preferences.ejs', data: app.data, user: req.session.userdata})
 })
 
 router.get('/changepass', (req, res) => {
   app.data.title = 'Change Password'
-  res.render('maintemplate', {contentpartial: 'builtin/changepass.ejs', data: app.data, user: controller.userdata})
+  res.render('maintemplate', {contentpartial: 'builtin/changepass.ejs', data: app.data, user: req.session.userdata})
 })
 
 router.post('/changepass', (req, res) => {
-  controller.checkLogin(controller.userdata.username, req.body.oldpassword)
+  controller.checkLogin(req.session.userdata.username, req.body.oldpassword)
     .then ((loginSuccess) => {
 
       //  If the password is incorrect, throw back to the password change endpoint
       if(!loginSuccess) {
         req.session.error = 'Current password is incorrect'
-        req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/bxs/changepass') }})
+        req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/bxs/changepass') }})
 
       // Otherwise, update the password
       } else {
 
-        controller.updatePasswordByUsername(controller.userdata.username, req.body.password)
+        controller.updatePasswordByUsername(req.session.userdata.username, req.body.password)
           .then((changeSuccess) => {
 
             if(changeSuccess === true) {
               req.session.alert = 'Your password has been updated'
               req.session.alertType = 'notify'
-              req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/') }})
+              req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/') }})
 
             } else {
 
@@ -183,7 +183,7 @@ router.post('/changepass', (req, res) => {
       } else {
         req.session.error = 'Unknown error'
       }
-      req.session.save((err) => { if (err) { this.logEntry("ERR: " + err) } else { return res.redirect('/bxs/changepass') }})
+      req.session.save((err) => { if (err) { this.logError(err) } else { return res.redirect('/bxs/changepass') }})
     })
 
 })
@@ -201,7 +201,7 @@ router.get('/sessiontest', (req, res) => {
     req.session.viewCount = 0
   }
   req.session.viewCount = req.session.viewCount + 1
-  res.send('a' + req.session.viewCount + '<p>' + (controller.userdata ? controller.userdata._id : ''))
+  res.send('a' + req.session.viewCount + '<p>' + (req.session.userdata ? req.session.userdata._id : ''))
 
 })
 

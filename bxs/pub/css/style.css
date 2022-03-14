@@ -116,3 +116,30 @@ nav ul li {
   cursor: pointer;
   transition: 0.3s;
 }
+
+
+.msgLine {
+  margin-bottom: 5px;
+  font-size: 0.8em;
+}
+
+.usertag {
+  border: 1px solid black;
+  border-radius: 4px;
+  background-color: #844;
+  margin-right: 7px;
+  margin-bottom: 2px;
+  padding: 1px 3px;
+  color: #fff;
+}
+
+#chat {
+  padding-top: 3px;
+  height: 350;
+  overflow-y: auto;
+  border: 1px solid grey;
+}
+
+.opusertag {
+  background-color: #def;
+}

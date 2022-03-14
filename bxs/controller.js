@@ -41,10 +41,6 @@ app.use(session({
 
 class SiteController {
 
-  constructor() {
-    this.userdata = {isLoggedIn: false}
-  }
-
   loadUserFromSession(userid) {
     return new Promise((resolve, reject) => {
       if (userid) {
@@ -52,9 +48,8 @@ class SiteController {
         this.getUserById(userid)
           .then((foundUser) => {
             if(foundUser) {
-              this.userdata = foundUser
-              this.userdata['isLoggedIn'] = true
-              resolve(true)
+              foundUser.isLoggedIn = true
+              resolve(foundUser)
             } else {
               let logStr = 'User ID not valid: ' + userid
               this.logWarning(logStr)
@@ -277,8 +272,10 @@ class SiteController {
           if(foundUser) {
             foundUser.verifiedDate = new Date()
             foundUser.verificationToken = null
-            foundUser.save()
-            return foundUser
+            foundUser.save(() => {
+              return foundUser
+            })
+
           } else {
             let logStr = `Tried to verify with bad token = ${token}`
             this.logError(logStr)
@@ -347,7 +344,8 @@ class SiteController {
                       let token = (Math.random() + 1).toString(36).substring(2)
                       var newUser = new User(userdata)
                       newUser.verificationToken = token
-
+                      newUser.balance = 0
+                      
                       bcrypt.hash(newUser.password, 3, ((err, encryptedPass) => {
                         newUser.password = encryptedPass
                         newUser.save()
@@ -379,13 +377,36 @@ class SiteController {
     }
 
 
-    logPageLoad() {
+
+    assignUserChatToken(username) {
+
+      return new Promise ((resolve, reject) => {
+        this.getUserByUsername(username)
+          .then((user) => {
+            let token = (Math.random() + 1).toString(36).substring(2)
+            user.chatToken = token
+            user.save()
+              .then((result) => {
+                resolve(token)
+              })
+
+          })
+          .catch((err) => {
+            let logStr = `Could not find / update user = ${username} | ${err}`
+            this.logError(logStr + `| ${err}`)
+            reject(logStr)
+          })
+
+      })
+    }
+
+    logPageLoad(requestMethod, requestPath, requestInputs) {
 
       if(this.requestPath == '/ln/checkInvoice/') return false;
 
       let fs = require('fs')
 
-      let entryStr = `PAGE: ${new Date().toTimeString()} | ${this.requestMethod} ${this.requestPath} | ${Object.entries(this.requestInputs).map(x=>x.join(":"))} \n`
+      let entryStr = `PAGE: ${new Date().toTimeString()} | ${requestMethod} ${requestPath} | ${Object.entries(requestInputs).map(x=>x.join(":"))} \n`
       fs.appendFile('./dev.log', entryStr, (err) => {
         if (err) {
           console.log(`Could not write log file! ${err}`);
@@ -490,20 +511,16 @@ app.use((req, res, next) => {
     delete req.session.alertType
     delete req.session.submittedInputs
 
-    controller.requestPath = req.path
-    controller.requestInputs = req.body
-    controller.requestMethod = req.method
-    controller.logPageLoad()
+    controller.logPageLoad(req.method, req.path, req.body)
 
     controller.loadUserFromSession(req.session.userid)
-      .then ((loadUserSuccess) => {
+      .then ((foundUser) => {
+        if(foundUser) {
 
-        if(loadUserSuccess) {
-
-          controller.userdata.isLoggedIn = true
+          req.session.userdata = foundUser
 
           //  If the user's forcePasswordReset flag is set, redirect them to password change
-          if(controller.userdata.forcePasswordReset) {
+          if(req.session.userdata.forcePasswordReset) {
             if(req.path != '/bxs/changepass' &&
                 req.path != '/bxs/logout' ) {
               req.session.alert = 'Please change your password'
@@ -514,9 +531,10 @@ app.use((req, res, next) => {
               next()
             }
 
-          //  If the user hasn't yet been verified, return them to the homepage and tell them to validate
-          } else if(!controller.userdata.verifiedDate) {
 
+          //  If the user hasn't yet been verified, return them to the homepage and tell them to validate
+        } else if(!req.session.userdata.verifiedDate && req.path != '/bxs/confirmemail/') {
+          console.log(req.path);
             if(req.path != '/') {
               req.session.alert = 'Please click the link in your email to verify your address'
               req.session.alertType = 'error'
@@ -530,10 +548,13 @@ app.use((req, res, next) => {
             }
 
           } else {
+
             next()
           }
 
         } else {
+          req.session.userdata = {}
+          req.session.userdata.isLoggedIn = false;
           next()
         }
 

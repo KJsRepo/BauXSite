@@ -1,0 +1,56 @@
+<script src="/src/socket.io.js"></script>
+
+<div id="chat" class="chatbox">
+
+</div>
+
+<form id="chatform">
+<input type="text" id="messageInput" name="messageInput" /><input type="submit" value="SEND" >
+</form>
+
+<script>
+
+var socket;
+
+window.onload = function () {
+  socket = io('http://10.10.20.51:3000');
+
+  var form = document.getElementById('chatform');
+  var input = document.getElementById('messageInput');
+
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (input.value) {
+      socket.emit('cm', {text: input.value, huddleId: <%= data.huddleId %>});
+      input.value = '';
+    }
+  });
+
+  socket.emit('reg', {huddleId: <%= data.huddleId %>, chatToken: '<%= data.chatToken %>'})
+
+  socket.on('cm', function(msgData) {
+
+    msg = JSON.parse(msgData)
+
+    var chatDiv = document.getElementById('chat')
+    var msgLine = document.createElement('div');
+    msgLine.classList.add('msgLine')
+
+    var userTag = document.createElement('span')
+    userTag.classList.add('usertag')
+    userTag.textContent = msg.u
+
+    var msgSpan = document.createElement('span')
+    msgSpan.textContent = msg.text;
+
+    msgLine.appendChild(userTag)
+    msgLine.appendChild(msgSpan)
+
+
+
+    chatDiv.appendChild(msgLine);
+    chatDiv.scrollTo(0, chatDiv.scrollHeight);
+  });
+}
+</script>
